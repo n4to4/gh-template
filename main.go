@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"text/template"
 )
 
@@ -35,7 +36,20 @@ func main() {
 
 	// apply templates
 	tmpl := template.Must(template.ParseFS(f, "tmpl/*.tmpl"))
-
 	vals := values{"n4to4", ghExtension}
-	tmpl.ExecuteTemplate(os.Stdout, "go.mod.tmpl", vals)
+	for _, t := range tmpl.Templates() {
+		var filename string
+		if t.Name() == "gh-command.tmpl" {
+			filename = ghExtension
+		} else {
+			filename = strings.TrimRight(t.Name(), ".tmpl")
+		}
+
+		f, err := os.Create(filename)
+		if err != nil {
+			log.Fatalf("failed to create file: %v\n", err)
+		}
+		tmpl.ExecuteTemplate(f, t.Name(), vals)
+		f.Close()
+	}
 }
