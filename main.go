@@ -49,6 +49,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to create file: %v\n", err)
 		}
+		if strings.HasSuffix(filename, ".sh") {
+			f.Chmod(0755)
+		}
 		tmpl.ExecuteTemplate(f, t.Name(), vals)
 		f.Close()
 	}
